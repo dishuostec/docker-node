@@ -18,6 +18,7 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     && set -ex \
     # libatomic1 for arm
     && apt-get update && apt-get install -y ca-certificates curl wget gnupg dirmngr xz-utils libatomic1 --no-install-recommends \
+    && c_rehash \
     && rm -rf /var/lib/apt/lists/* \
     && for key in \
       4ED778F539E3634C779C87C6D7062848A1AB005C \
@@ -55,7 +56,7 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
     && node --version \
     && npm --version
 
-ENV PNPM_VERSION 6.10.3
+ENV PNPM_VERSION 6.11.5
 
 RUN npm install -g pnpm@$PNPM_VERSION \
   # smoke test

@@ -71,7 +71,7 @@ RUN addgroup -g 1000 node \
   && node --version \
   && npm --version
 
-ENV PNPM_VERSION 6.10.3
+ENV PNPM_VERSION 6.11.5
 
 RUN npm install -g pnpm@$PNPM_VERSION \
   # smoke test
