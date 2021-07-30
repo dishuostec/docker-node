@@ -12,15 +12,15 @@ function usage() {
 
   Examples:
     - update.sh                      # Update all images
-    - update.sh -s                   # Update all images, skip updating Alpine and Yarn
+    - update.sh -s                   # Update all images, skip updating Alpine and Pnpm
     - update.sh 8,10                 # Update all variants of version 8 and 10
-    - update.sh -s 8                 # Update version 8 and variants, skip updating Alpine and Yarn
+    - update.sh -s 8                 # Update version 8 and variants, skip updating Alpine and Pnpm
     - update.sh 8 buster-slim,buster # Update only buster's slim and buster variants for version 8
-    - update.sh -s 8 stretch         # Update only stretch variant for version 8, skip updating Alpine and Yarn
+    - update.sh -s 8 stretch         # Update only stretch variant for version 8, skip updating Alpine and Pnpm
     - update.sh . alpine             # Update the alpine variant for all versions
 
   OPTIONS:
-    -s Security update; skip updating the yarn and alpine versions.
+    -s Security update; skip updating the pnpm and alpine versions.
     -b CI config update only
     -h Show this message
 
@@ -67,7 +67,7 @@ arch=$(get_arch)
 
 if [ "${SKIP}" != true ]; then
   alpine_version=$(get_config "./" "alpine_version")
-  yarnVersion="$(curl -sSL --compressed https://yarnpkg.com/latest-version)"
+  pnpmVersion="$(curl -sSL --compressed https://registry.npmjs.com/pnpm/latest | sed -r 's/.*"version":"([.0-9]+).*/\1/')"
 fi
 
 function in_versions_to_update() {
@@ -136,17 +136,17 @@ function update_node_version() {
     sed -Ei -e 's/^(ENV NODE_VERSION ).*/\1'"${nodeVersion}"'/' "${dockerfile}-tmp"
 
     if [ "${SKIP}" = true ]; then
-      # Get the currently used Yarn version
-      yarnVersion="$(grep "ENV YARN_VERSION" "${dockerfile}" | cut -d' ' -f3)"
+      # Get the currently used pnpm version
+      pnpmVersion="$(grep "ENV PNPM_VERSION" "${dockerfile}" | cut -d' ' -f3)"
     fi
-    sed -Ei -e 's/^(ENV YARN_VERSION ).*/\1'"${yarnVersion}"'/' "${dockerfile}-tmp"
+    sed -Ei -e 's/^(ENV PNPM_VERSION ).*/\1'"${pnpmVersion}"'/' "${dockerfile}-tmp"
 
     # shellcheck disable=SC1004
     new_line=' \\\
 '
 
     # Add GPG keys
-    for key_type in "node" "yarn"; do
+    for key_type in "node"; do
       while read -r line; do
         pattern='"\$\{'$(echo "${key_type}" | tr '[:lower:]' '[:upper:]')'_KEYS\[@\]\}"'
         sed -Ei -e "s/([ \\t]*)(${pattern})/\\1${line}${new_line}\\1\\2/" "${dockerfile}-tmp"
